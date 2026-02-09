@@ -1,0 +1,40 @@
+name: patrick-migration-test/spring-gitlab-cf-deploy-demo
+on:
+  push:
+  workflow_dispatch:
+concurrency:
+  group: "${{ github.ref }}"
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: java:8
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4.1.0
+      with:
+        fetch-depth: 0
+        lfs: true
+    - run: "./mvnw package"
+    - uses: actions/upload-artifact@v4.1.0
+      if: success()
+      with:
+        name: "${{ github.job }}"
+        path: target/demo-0.0.1-SNAPSHOT.jar
+  production:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: java:8
+    if: github.ref == 'refs/heads/master'
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4.1.0
+      with:
+        fetch-depth: 0
+        lfs: true
+    - uses: actions/download-artifact@v4.1.0
+    - run: curl --location "https://cli.run.pivotal.io/stable?release=linux64-binary&source=github" | tar zx
+    - run: "./cf login -u $CF_USERNAME -p $CF_PASSWORD -a api.run.pivotal.io"
+    - run: "./cf push"
