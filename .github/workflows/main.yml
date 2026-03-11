@@ -25,17 +25,7 @@ jobs:
         with:
           gradle-version: '7.6.4'
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/gradle-wrapper.properties') }}-${{ hashFiles('**/*.gradle*', '**/pom.xml') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
-
       - name: build with gradle
-        working-directory: ./src
-        run: gradle clean bootjar test wrapper
+        #working-directory: ./src
+        run: gradle clean bootJar test wrapper
         
